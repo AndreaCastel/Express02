@@ -6,6 +6,8 @@ const express = require("express");
 
 const app = express();
 
+app.use(express.json());
+
 
 const welcome = (req, res) => {
   res.send("Welcome to my favourite movie list");
@@ -14,7 +16,6 @@ const welcome = (req, res) => {
 app.get("/", welcome);
 
 const movieHandlers = require("./movieHandlers");
-
 app.get("/api/movies", movieHandlers.getMovies);
 app.get("/api/movies/:id", movieHandlers.getMovieById);
 
@@ -27,7 +28,9 @@ app.listen(port, (err) => {
 });
 
 const users = require("./users");
-app.get("/api/users", users.Users);
-
-
+app.get("/api/users", users.getUsers);
 app.get("/api/users/:id", users.usersId);
+
+
+app.post("/api/movies", movieHandlers.postMovie);
+app.post("/api/users", users.postUsers);

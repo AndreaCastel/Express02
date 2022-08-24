@@ -1,43 +1,55 @@
-const users = [
-    {
-        id: 1,
-        name: "Lesloulous",
-        firstname: "Marina",
-    },
-    {
-        id: 2,
-        name: "Tiobarik",
-        firstname: "Antoine",
-    },
-    {
-        id: 3,
-        name: "Prof",
-        firstname: "Yohan",
-    },
-    {
-        id: 4,
-        name: "Pokora",
-        firstname: "Julien",
-    },
-];
+const database = require("./database");
 
-const Users = (req, res) => {
-   res.status(200).send(users).json(users);
+const getUsers = (req, res) => {
+  database
+    .query("select * from users")
+    .then(([users]) => {
+        res.json(users);
+    })
+    .catch((err) => {
+        console.error(err);
+        res.status(500).send("Error from User DB")
+    })
   };
 
 const usersId = (req, res) => {
     const id = parseInt(req.params.id);
-    const findId = users.find(user => id === (user.id));
+    
+    database
+        .query("select * from users where id=?", [id])
+        .then(([users]) => {
+            if(users[0] != null) {
+                res.json(users[0]);
+            } else {
+                res.status(404).send("user not found");
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).send("user DB failed")
+        })
+};
 
-    if(findId){
-        res.status(200).json(findId);
-    } else {
-        res.status(404).send('Not Found');
-    }
-}
+const postUsers = (req, res) => {
+    const { firstname, lastname, email, city, language } = req.body;
+  
+    database
+      .query(
+        "INSERT INTO users(firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
+        [firstname, lastname, email, city, language]
+      )
+      .then(([result]) => {
+        res.location(`/api/users/${result.insertId}`).sendStatus(201);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send("Error saving user");
+      });
+  };
   
 
 module.exports = {
-    Users,
+    getUsers,
     usersId,
-}
+    postUsers,
+};
